@@ -1,73 +1,101 @@
-# Welcome to your Lovable project
 
-## Project info
+# Airport Management System
 
-**URL**: https://lovable.dev/projects/81cfb34f-6da0-4ea5-a7a9-bf83f235211c
+This is a full-stack application for airport management, with a React frontend and Express backend.
 
-## How can I edit this code?
+## Project Structure
 
-There are several ways of editing your application.
+- `src/`: Frontend React application
+  - `components/`: UI components
+  - `pages/`: Page components
+  - `services/`: API service functions
+  - `types/`: TypeScript interfaces
+- `src/backend/`: Backend Express server
+  - `routes/`: API route handlers
+  - `db.js`: Database connection and query functions
+  - `server.js`: Express server configuration
 
-**Use Lovable**
+## Setup Instructions
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/81cfb34f-6da0-4ea5-a7a9-bf83f235211c) and start prompting.
+### Step 1: Install Dependencies
 
-Changes made via Lovable will be committed automatically to this repo.
+```bash
+# Install frontend dependencies
+npm install
 
-**Use your preferred IDE**
+# Install backend dependencies
+cd src/backend
+npm install
+```
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+### Step 2: Start the Backend Server
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
+```bash
+# From the backend directory
+cd src/backend
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+The backend server will start on port 3001.
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+### Step 3: Start the Frontend Application
 
-**Use GitHub Codespaces**
+```bash
+# From the project root directory
+npm start
+```
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+The frontend application will start on port 3000.
 
-## What technologies are used for this project?
+### Step 4: Connect to a Real Database
 
-This project is built with:
+Currently, the application uses mock data. To connect to a real database:
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+1. Install the appropriate database driver:
+   ```bash
+   cd src/backend
+   npm install oracledb
+   ```
 
-## How can I deploy this project?
+2. Update the `db.js` file with your database connection details:
+   - Uncomment the Oracle DB implementation section
+   - Replace the placeholder credentials with your actual database credentials
 
-Simply open [Lovable](https://lovable.dev/projects/81cfb34f-6da0-4ea5-a7a9-bf83f235211c) and click on Share -> Publish.
+3. Update the `server.js` file to initialize the database connection:
+   ```javascript
+   const db = require('./db');
+   db.initialize().then(() => {
+     app.listen(PORT, () => {
+       console.log(`Server is running on port ${PORT}`);
+     });
+   }).catch(err => {
+     console.error('Failed to initialize database:', err);
+   });
+   ```
 
-## Can I connect a custom domain to my Lovable project?
+4. Run the SQL script to create the database schema and seed data:
+   ```bash
+   # Using Oracle SQL*Plus or another Oracle client
+   sqlplus username/password@//host:port/service @path/to/airport_management_system.sql
+   ```
 
-Yes it is!
+## Features
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+- View and filter flights
+- Manage passengers and their tickets
+- Employee management
+- Ticket booking system
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+## API Endpoints
+
+- `GET /api/flights`: Get all flights
+- `GET /api/flights?status=on-time`: Get flights by status
+- `GET /api/flights/:code`: Get flight by code
+- `GET /api/passengers`: Get all passengers
+- `GET /api/passengers/:id`: Get passenger by ID
+- `GET /api/employees`: Get all employees
+- `GET /api/employees/:id`: Get employee by ID
+- `GET /api/tickets`: Get all tickets
+- `GET /api/tickets/:id`: Get ticket by ID
+
+Additional endpoints for creating, updating, and deleting resources will be implemented in future versions.
