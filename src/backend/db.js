@@ -4,8 +4,8 @@ const oracledb = require('oracledb');
 
 // Connection configuration - load from environment variables in production
 const dbConfig = {
-  user: process.env.DB_USER || 'your_username',
-  password: process.env.DB_PASSWORD || 'your_password',
+  user: process.env.DB_USER || 'your_actual_username',
+  password: process.env.DB_PASSWORD || 'your_actual_password',
   connectString: process.env.DB_CONNECTION_STRING || 'localhost:1521/your_service_name'
 };
 
