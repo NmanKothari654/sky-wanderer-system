@@ -32,4 +32,68 @@ router.get('/:code', async (req, res) => {
   }
 });
 
+// Create a new flight
+router.post('/', async (req, res) => {
+  try {
+    // In production, this would insert into the Oracle DB
+    // For now, we'll just return a success message with the received data
+    const newFlight = req.body;
+    
+    // Validate required fields
+    if (!newFlight.flight_code || !newFlight.source || !newFlight.destination) {
+      return res.status(400).json({ error: 'Missing required flight information' });
+    }
+    
+    // In a real implementation, you would execute an INSERT SQL statement here
+    // Example SQL: INSERT INTO FLIGHT (...) VALUES (...) 
+    
+    res.status(201).json({ 
+      message: 'Flight created successfully', 
+      flight: newFlight 
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Update a flight
+router.put('/:code', async (req, res) => {
+  try {
+    const flightCode = req.params.code;
+    const updatedFlight = req.body;
+    
+    // Validate flight code
+    if (!flightCode) {
+      return res.status(400).json({ error: 'Flight code is required' });
+    }
+    
+    // In production, this would update the flight in Oracle DB
+    // Example SQL: UPDATE FLIGHT SET ... WHERE flight_code = :code
+    
+    res.json({ 
+      message: 'Flight updated successfully', 
+      flight_code: flightCode 
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Delete a flight
+router.delete('/:code', async (req, res) => {
+  try {
+    const flightCode = req.params.code;
+    
+    // In production, this would delete the flight from Oracle DB
+    // Example SQL: DELETE FROM FLIGHT WHERE flight_code = :code
+    
+    res.json({ 
+      message: 'Flight deleted successfully', 
+      flight_code: flightCode 
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 module.exports = router;

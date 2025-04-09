@@ -1,8 +1,16 @@
 
-// This is a mock database module
-// In a real application, you would connect to your Oracle database here
-// using a library like oracledb
+// Database module for Oracle DB connection
+const oracledb = require('oracledb');
 
+// Connection configuration - load from environment variables in production
+const dbConfig = {
+  user: process.env.DB_USER || 'your_username',
+  password: process.env.DB_PASSWORD || 'your_password',
+  connectString: process.env.DB_CONNECTION_STRING || 'localhost:1521/your_service_name'
+};
+
+// For development/testing purposes, we'll use the mock data
+// In production, replace with actual database queries
 const mockData = {
   flights: [
     {
@@ -121,7 +129,45 @@ const mockData = {
   ]
 };
 
-// Query functions
+// Database connection initialization - uncomment when ready to use with Oracle DB
+async function initialize() {
+  try {
+    await oracledb.createPool(dbConfig);
+    console.log('Oracle Database connection pool created');
+    return true;
+  } catch (err) {
+    console.error('Error creating Oracle connection pool:', err);
+    console.log('Using mock data instead');
+    return false;
+  }
+}
+
+// Execute SQL query against Oracle DB
+async function executeQuery(sql, binds = [], opts = {}) {
+  let connection;
+  try {
+    connection = await oracledb.getConnection();
+    const result = await connection.execute(sql, binds, {
+      outFormat: oracledb.OUT_FORMAT_OBJECT,
+      autoCommit: true,
+      ...opts
+    });
+    return result.rows;
+  } catch (err) {
+    console.error('Error executing SQL query:', err);
+    throw err;
+  } finally {
+    if (connection) {
+      try {
+        await connection.close();
+      } catch (err) {
+        console.error('Error closing connection:', err);
+      }
+    }
+  }
+}
+
+// Query functions using mock data (for development/testing)
 function getAll(entity) {
   return Promise.resolve(mockData[entity] || []);
 }
@@ -138,52 +184,77 @@ function getByField(entity, fieldName, value) {
   return Promise.resolve(filteredItems);
 }
 
+// When ready to switch to Oracle DB, replace the exported functions with these:
+/*
+async function getAll(entity) {
+  const entityMap = {
+    'flights': 'FLIGHT',
+    'passengers': 'PASSENGER2 p2 JOIN PASSENGER1 p1 ON p2.PASSPORTNO = p1.PASSPORTNO JOIN PASSENGER3 p3 ON p1.PID = p3.PID',
+    'employees': 'EMPLOYEE1 e1 JOIN EMPLOYEE2 e2 ON e1.JOBTYPE = e2.JOBTYPE',
+    'tickets': 'TICKET1'
+  };
+  
+  const tableName = entityMap[entity] || entity.toUpperCase();
+  try {
+    return await executeQuery(`SELECT * FROM ${tableName}`);
+  } catch (err) {
+    console.error(`Error fetching all ${entity}:`, err);
+    // Fallback to mock data if query fails
+    return mockData[entity] || [];
+  }
+}
+
+async function getById(entity, id, idField) {
+  const entityMap = {
+    'flights': { table: 'FLIGHT', field: 'flight_code' },
+    'passengers': { table: 'PASSENGER2 p2 JOIN PASSENGER1 p1 ON p2.PASSPORTNO = p1.PASSPORTNO JOIN PASSENGER3 p3 ON p1.PID = p3.PID', field: 'p1.PID' },
+    'employees': { table: 'EMPLOYEE1 e1 JOIN EMPLOYEE2 e2 ON e1.JOBTYPE = e2.JOBTYPE', field: 'e1.SSN' },
+    'tickets': { table: 'TICKET1', field: 'ticket_number' }
+  };
+  
+  const dbInfo = entityMap[entity] || { table: entity.toUpperCase(), field: idField };
+  
+  try {
+    const result = await executeQuery(
+      `SELECT * FROM ${dbInfo.table} WHERE ${dbInfo.field} = :id`,
+      [id]
+    );
+    return result.length > 0 ? result[0] : null;
+  } catch (err) {
+    console.error(`Error fetching ${entity} by id:`, err);
+    // Fallback to mock data
+    const items = mockData[entity] || [];
+    return items.find(i => String(i[idField]) === String(id));
+  }
+}
+
+async function getByField(entity, fieldName, value) {
+  const entityMap = {
+    'flights': 'FLIGHT',
+    'passengers': 'PASSENGER2 p2 JOIN PASSENGER1 p1 ON p2.PASSPORTNO = p1.PASSPORTNO JOIN PASSENGER3 p3 ON p1.PID = p3.PID',
+    'employees': 'EMPLOYEE1 e1 JOIN EMPLOYEE2 e2 ON e1.JOBTYPE = e2.JOBTYPE',
+    'tickets': 'TICKET1'
+  };
+  
+  const tableName = entityMap[entity] || entity.toUpperCase();
+  try {
+    return await executeQuery(
+      `SELECT * FROM ${tableName} WHERE ${fieldName} = :value`,
+      [value]
+    );
+  } catch (err) {
+    console.error(`Error fetching ${entity} by field:`, err);
+    // Fallback to mock data
+    const items = mockData[entity] || [];
+    return items.filter(i => String(i[fieldName]).toLowerCase() === String(value).toLowerCase());
+  }
+}
+*/
+
 module.exports = {
+  initialize,
   getAll,
   getById,
-  getByField
+  getByField,
+  executeQuery
 };
-
-/* 
-// In a real implementation with Oracle DB, you would use something like this:
-
-const oracledb = require('oracledb');
-
-const dbConfig = {
-  user: 'your_username',
-  password: 'your_password',
-  connectString: 'localhost:1521/your_service_name'
-};
-
-async function initialize() {
-  try {
-    await oracledb.createPool(dbConfig);
-    console.log('Connection pool created');
-  } catch (err) {
-    console.error('Error creating connection pool:', err);
-    throw err;
-  }
-}
-
-async function execute(sql, binds = [], opts = {}) {
-  let connection;
-  try {
-    connection = await oracledb.getConnection();
-    const result = await connection.execute(sql, binds, opts);
-    return result;
-  } catch (err) {
-    console.error('Error executing SQL:', err);
-    throw err;
-  } finally {
-    if (connection) {
-      try {
-        await connection.close();
-      } catch (err) {
-        console.error('Error closing connection:', err);
-      }
-    }
-  }
-}
-
-module.exports = { initialize, execute };
-*/
