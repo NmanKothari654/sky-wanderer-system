@@ -1,4 +1,3 @@
-
 // Database module for Oracle DB connection
 const oracledb = require('oracledb');
 
@@ -132,8 +131,14 @@ const mockData = {
 // Database connection initialization - uncomment when ready to use with Oracle DB
 async function initialize() {
   try {
+    console.log('Attempting to connect to Oracle Database with config:', {
+      user: dbConfig.user,
+      connectString: dbConfig.connectString
+      // We don't log password for security reasons
+    });
+    
     await oracledb.createPool(dbConfig);
-    console.log('Oracle Database connection pool created');
+    console.log('Oracle Database connection pool created successfully');
     return true;
   } catch (err) {
     console.error('Error creating Oracle connection pool:', err);
@@ -147,11 +152,15 @@ async function executeQuery(sql, binds = [], opts = {}) {
   let connection;
   try {
     connection = await oracledb.getConnection();
+    console.log('SQL query executing:', sql);
+    
     const result = await connection.execute(sql, binds, {
       outFormat: oracledb.OUT_FORMAT_OBJECT,
       autoCommit: true,
       ...opts
     });
+    
+    console.log(`Query returned ${result.rows ? result.rows.length : 0} rows`);
     return result.rows;
   } catch (err) {
     console.error('Error executing SQL query:', err);
@@ -167,24 +176,53 @@ async function executeQuery(sql, binds = [], opts = {}) {
   }
 }
 
+// Flag to determine if we're using mock data or real DB
+let usingMockData = true;
+
 // Query functions using mock data (for development/testing)
 function getAll(entity) {
-  return Promise.resolve(mockData[entity] || []);
+  if (usingMockData) {
+    console.log(`[MOCK DATA] Fetching all ${entity}`);
+    return Promise.resolve(mockData[entity] || []);
+  } else {
+    // This would be replaced by actual DB queries when usingMockData is false
+    // For now, we'll still return mock data
+    console.log(`[REAL DB] Would fetch all ${entity} from database`);
+    return Promise.resolve(mockData[entity] || []);
+  }
 }
 
 function getById(entity, id, idField) {
-  const items = mockData[entity] || [];
-  const item = items.find(i => String(i[idField]) === String(id));
-  return Promise.resolve(item);
+  if (usingMockData) {
+    console.log(`[MOCK DATA] Fetching ${entity} with ${idField}=${id}`);
+    const items = mockData[entity] || [];
+    const item = items.find(i => String(i[idField]) === String(id));
+    return Promise.resolve(item);
+  } else {
+    // This would be replaced by actual DB queries when usingMockData is false
+    console.log(`[REAL DB] Would fetch ${entity} with ${idField}=${id} from database`);
+    const items = mockData[entity] || [];
+    const item = items.find(i => String(i[idField]) === String(id));
+    return Promise.resolve(item);
+  }
 }
 
 function getByField(entity, fieldName, value) {
-  const items = mockData[entity] || [];
-  const filteredItems = items.filter(i => String(i[fieldName]).toLowerCase() === String(value).toLowerCase());
-  return Promise.resolve(filteredItems);
+  if (usingMockData) {
+    console.log(`[MOCK DATA] Fetching ${entity} with ${fieldName}=${value}`);
+    const items = mockData[entity] || [];
+    const filteredItems = items.filter(i => String(i[fieldName]).toLowerCase() === String(value).toLowerCase());
+    return Promise.resolve(filteredItems);
+  } else {
+    // This would be replaced by actual DB queries when usingMockData is false
+    console.log(`[REAL DB] Would fetch ${entity} with ${fieldName}=${value} from database`);
+    const items = mockData[entity] || [];
+    const filteredItems = items.filter(i => String(i[fieldName]).toLowerCase() === String(value).toLowerCase());
+    return Promise.resolve(filteredItems);
+  }
 }
 
-// When ready to switch to Oracle DB, replace the exported functions with these:
+// When ready to switch to Oracle DB, uncomment and use these functions instead
 /*
 async function getAll(entity) {
   const entityMap = {
@@ -256,5 +294,11 @@ module.exports = {
   getAll,
   getById,
   getByField,
-  executeQuery
+  executeQuery,
+  // Export this variable to allow toggling between mock and real data
+  setUseMockData: (useMock) => {
+    usingMockData = useMock;
+    console.log(`Data source set to: ${useMock ? 'MOCK DATA' : 'REAL DATABASE'}`);
+  },
+  isUsingMockData: () => usingMockData
 };

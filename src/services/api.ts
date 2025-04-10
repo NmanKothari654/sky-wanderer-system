@@ -1,4 +1,3 @@
-
 // This service handles API requests to the backend server
 import { Airline, Airport, Flight, Passenger, Employee, Ticket } from "../types";
 
@@ -8,16 +7,18 @@ const API_URL = "http://localhost:3001/api";
 // Helper function to handle API requests
 const fetchData = async <T>(endpoint: string): Promise<T[]> => {
   try {
-    console.log(`Fetching from ${API_URL}/${endpoint}`);
+    console.log(`[Frontend API] Fetching from ${API_URL}/${endpoint}`);
     const response = await fetch(`${API_URL}/${endpoint}`);
     
     if (!response.ok) {
       throw new Error(`API request failed with status ${response.status}`);
     }
     
-    return await response.json();
+    const data = await response.json();
+    console.log(`[Frontend API] Successfully fetched ${data.length} items from ${endpoint}`);
+    return data;
   } catch (error) {
-    console.error(`Error fetching data from ${endpoint}:`, error);
+    console.error(`[Frontend API] Error fetching data from ${endpoint}:`, error);
     // Return empty array as fallback during development
     return [] as T[];
   }
@@ -34,16 +35,18 @@ export const getTickets = () => fetchData<Ticket>("tickets");
 // Function to get flights by status
 export const getFlightsByStatus = async (status: string): Promise<Flight[]> => {
   try {
-    console.log(`Fetching flights with status: ${status}`);
+    console.log(`[Frontend API] Fetching flights with status: ${status}`);
     const response = await fetch(`${API_URL}/flights?status=${status}`);
     
     if (!response.ok) {
       throw new Error(`API request failed with status ${response.status}`);
     }
     
-    return await response.json();
+    const data = await response.json();
+    console.log(`[Frontend API] Successfully fetched ${data.length} flights with status ${status}`);
+    return data;
   } catch (error) {
-    console.error(`Error fetching flights by status:`, error);
+    console.error(`[Frontend API] Error fetching flights by status:`, error);
     return [];
   }
 };
@@ -107,5 +110,3 @@ export const updateFlight = async (flightCode: string, flight: Partial<Flight>):
     throw error;
   }
 };
-
-// Similar functions for other entities can be added as needed
