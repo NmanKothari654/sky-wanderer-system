@@ -10,11 +10,9 @@ const ticketRoutes = require('./routes/tickets');
 
 const app = express();
 
-// Enable CORS for frontend requests
+// Enable CORS for all requests
 app.use(cors({
-  origin: process.env.NODE_ENV === 'production' 
-    ? 'https://your-production-frontend-domain.com' 
-    : 'http://localhost:5173', // Default Vite dev server port
+  origin: '*', // Allow all origins in development
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
@@ -48,5 +46,6 @@ db.initialize()
     // Start server regardless of database connection status
     app.listen(PORT, () => {
       console.log(`Server is running on port ${PORT}`);
+      console.log(`API is available at http://localhost:${PORT}/api`);
     });
   });

@@ -1,8 +1,10 @@
+
 // This service handles API requests to the backend server
 import { Airline, Airport, Flight, Passenger, Employee, Ticket } from "../types";
 
-// Backend API URL
-const API_URL = "http://localhost:3001/api";
+// Backend API URL - use relative URL for same-origin requests
+// or the full URL for cross-origin requests in development/production
+const API_URL = "/api";
 
 // Helper function to handle API requests
 const fetchData = async <T>(endpoint: string): Promise<T[]> => {
